@@ -7,6 +7,16 @@ export interface User {
   email: string;
   membership: 'free' | 'premium' | 'elite';
   avatar?: string;
+  role?: 'user' | 'admin';
+  isActive?: boolean;
+  isSpam?: boolean;
+  height?: number;
+  weight?: number;
+  age?: number;
+  sex?: 'male' | 'female' | 'other';
+  joinDate?: string;
+  revenue?: number;
+  qrCode?: string;
 }
 
 export interface WorkoutSession {
@@ -25,6 +35,7 @@ export interface UserStore {
   workoutHistory: WorkoutSession[];
   selectedExercise: string | null;
   cartItems: number;
+  allUsers: User[];
   
   // Actions
   setUser: (user: User | null) => void;
@@ -32,6 +43,11 @@ export interface UserStore {
   addWorkoutSession: (session: WorkoutSession) => void;
   setSelectedExercise: (exerciseId: string | null) => void;
   updateCartItems: (count: number) => void;
+  addUser: (user: User) => void;
+  toggleUserActive: (userId: string) => void;
+  markUserAsSpam: (userId: string) => void;
+  updateUserInfo: (userId: string, info: Partial<User>) => void;
+  getAllUsers: () => User[];
 }
 
 export const useStore = create<UserStore>()(
@@ -42,6 +58,53 @@ export const useStore = create<UserStore>()(
       workoutHistory: [],
       selectedExercise: null,
       cartItems: 0,
+      allUsers: [
+        {
+          id: '2',
+          name: 'Karim Ahmed',
+          email: 'karim@gym.com',
+          membership: 'premium',
+          role: 'user',
+          isActive: true,
+          isSpam: false,
+          height: 180,
+          weight: 75,
+          age: 28,
+          sex: 'male',
+          joinDate: '2024-01-15',
+          revenue: 2999,
+        },
+        {
+          id: '3',
+          name: 'Fatima Belhadj',
+          email: 'fatima@gym.com',
+          membership: 'elite',
+          role: 'user',
+          isActive: true,
+          isSpam: false,
+          height: 165,
+          weight: 58,
+          age: 26,
+          sex: 'female',
+          joinDate: '2024-02-20',
+          revenue: 3499,
+        },
+        {
+          id: '4',
+          name: 'Amin Boukerch',
+          email: 'amin@gym.com',
+          membership: 'free',
+          role: 'user',
+          isActive: false,
+          isSpam: false,
+          height: 175,
+          weight: 70,
+          age: 32,
+          sex: 'male',
+          joinDate: '2024-01-10',
+          revenue: 0,
+        },
+      ],
 
       setUser: (user) => {
         // Set cookie for middleware
@@ -79,6 +142,30 @@ export const useStore = create<UserStore>()(
       updateCartItems: (count) => set({
         cartItems: count,
       }),
+
+      addUser: (user) => set((state) => ({
+        allUsers: [...state.allUsers, user],
+      })),
+
+      toggleUserActive: (userId) => set((state) => ({
+        allUsers: state.allUsers.map((user) =>
+          user.id === userId ? { ...user, isActive: !user.isActive } : user
+        ),
+      })),
+
+      markUserAsSpam: (userId) => set((state) => ({
+        allUsers: state.allUsers.map((user) =>
+          user.id === userId ? { ...user, isSpam: true } : user
+        ),
+      })),
+
+      updateUserInfo: (userId, info) => set((state) => ({
+        allUsers: state.allUsers.map((user) =>
+          user.id === userId ? { ...user, ...info } : user
+        ),
+      })),
+
+      getAllUsers: () => (state) => state.allUsers,
     }),
     {
       name: 'kimo-gym-store',
@@ -87,6 +174,7 @@ export const useStore = create<UserStore>()(
         isAuthenticated: state.isAuthenticated,
         workoutHistory: state.workoutHistory,
         cartItems: state.cartItems,
+        allUsers: state.allUsers,
       }),
     }
   )

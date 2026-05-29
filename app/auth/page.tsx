@@ -34,21 +34,40 @@ export default function AuthPage() {
     }
 
     setLoading(true);
-    
+    performLogin(email, name, isLogin);
+  };
+
+  const performLogin = (loginEmail: string, loginName: string, isLoginMode: boolean) => {
     // Simulate auth with cinematic delay
     setTimeout(() => {
+      // Check for admin access
+      const isAdmin = loginEmail === 'hamada.laidi.14@gmail.com' || loginEmail === 'admin@kimo.com';
+      
       setUser({
-        id: isLogin ? '1' : Date.now().toString(),
-        name: isLogin ? email.split('@')[0] : name,
-        email,
-        membership: isLogin ? 'premium' : 'free',
+        id: isLoginMode ? '1' : Date.now().toString(),
+        name: isAdmin ? 'Hamada Laidi' : (isLoginMode ? loginEmail.split('@')[0] : loginName),
+        email: loginEmail,
+        membership: 'premium',
+        role: isAdmin ? 'admin' : 'user',
+        isActive: true,
       });
       
       // Cinematic exit animation before redirect
       setTimeout(() => {
-        router.push('/?justLoggedIn=true');
+        if (isAdmin) {
+          router.push('/admin');
+        } else {
+          router.push('/?justLoggedIn=true');
+        }
       }, 300);
     }, 1200);
+  };
+
+  const quickAdminLogin = () => {
+    setEmail('hamada.laidi.14@gmail.com');
+    setPassword('admin');
+    setLoading(true);
+    performLogin('hamada.laidi.14@gmail.com', 'Hamada', true);
   };
 
   return (
@@ -266,6 +285,17 @@ export default function AuthPage() {
                 </AnimatePresence>
               </motion.button>
             </form>
+
+            {/* Quick Admin Login Button */}
+            <motion.button
+              onClick={quickAdminLogin}
+              disabled={loading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full h-10 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium text-sm transition-all mt-3 disabled:opacity-50"
+            >
+              Admin Login (hamada.laidi.14@gmail.com)
+            </motion.button>
           </motion.div>
 
           {/* Footer */}
