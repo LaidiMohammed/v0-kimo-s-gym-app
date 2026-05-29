@@ -1,16 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useRouter } from 'next/navigation';
+import { useStore } from '@/lib/store';
+import { motion } from 'framer-motion';
+import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useStore } from '@/lib/store';
-import { useRouter } from 'next/navigation';
-import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 export default function AuthPage() {
+  const router = useRouter();
+  const setUser = useStore((state) => state.setUser);
+  
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,66 +19,54 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  
-  const setUser = useStore((state) => state.setUser);
-  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('[v0] Form submitted with email:', email);
-    
+  const handleLogin = () => {
+    console.log('[v0] Login button clicked');
     setError('');
-
-    // Simple validation
-    if (!email.trim() || !password.trim()) {
+    
+    if (!email || !password) {
       setError('Please fill in all fields');
       return;
     }
 
-    if (!isLogin && !name.trim()) {
-      setError('Please enter your full name');
+    setLoading(true);
+    
+    // Simulate auth
+    setTimeout(() => {
+      console.log('[v0] Setting user and redirecting');
+      setUser({
+        id: '1',
+        name: email.split('@')[0],
+        email,
+        membership: 'premium',
+      });
+      setLoading(false);
+      router.push('/');
+    }, 800);
+  };
+
+  const handleSignUp = () => {
+    console.log('[v0] Sign up button clicked');
+    setError('');
+    
+    if (!name || !email || !password) {
+      setError('Please fill in all fields');
       return;
     }
 
     setLoading(true);
-
-    // Simulate auth delay
+    
     setTimeout(() => {
-      console.log('[v0] Logging in user:', email);
-      
-      const userData = isLogin
-        ? {
-            id: '1',
-            name: email.split('@')[0],
-            email,
-            membership: 'premium' as const,
-          }
-        : {
-            id: Date.now().toString(),
-            name,
-            email,
-            membership: 'free' as const,
-          };
-
-      setUser(userData);
-      setLoading(false);
-      console.log('[v0] User set, redirecting to home');
-      router.push('/');
-    }, 500);
-  };
-
-  const handleSocialAuth = (provider: string) => {
-    setLoading(true);
-    setTimeout(() => {
+      console.log('[v0] Setting user and redirecting');
       setUser({
         id: Date.now().toString(),
-        name: `${provider} User`,
-        email: `user@${provider.toLowerCase()}.com`,
+        name,
+        email,
         membership: 'free',
       });
       setLoading(false);
       router.push('/');
-    }, 1500);
+    }, 800);
   };
 
   return (
@@ -101,21 +90,22 @@ export default function AuthPage() {
         transition={{ duration: 0.6 }}
       >
         {/* Logo */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Link href="/" className="flex items-center justify-center gap-3 mb-8">
-            <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shadow-lg shadow-accent/40">
-              <span className="text-xl font-bold text-accent-foreground">💪</span>
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">Kimo&apos;s Gym</h2>
-              <p className="text-xs text-accent uppercase tracking-wider font-semibold">Premium Fitness</p>
-            </div>
-          </Link>
-        </motion.div>
+        <Link href="/" className="flex items-center justify-center gap-3 mb-8">
+          <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shadow-lg shadow-accent/40">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+            >
+              <svg className="w-6 h-6 text-accent-foreground" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-13c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" />
+              </svg>
+            </motion.div>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Kimo&apos;s Gym</h2>
+            <p className="text-xs text-accent uppercase tracking-wider font-semibold">Premium Fitness</p>
+          </div>
+        </Link>
 
         {/* Card */}
         <motion.div
@@ -124,27 +114,56 @@ export default function AuthPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          {/* Title */}
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground mb-2">
-              {isLogin ? 'Welcome Back' : 'Get Started'}
-            </h1>
-            <p className="text-sm text-foreground/60">
-              {isLogin
-                ? 'Sign in to access your fitness journey'
-                : 'Create account to join our community'}
-            </p>
+          {/* Tabs */}
+          <div className="flex gap-4 bg-foreground/5 rounded-lg p-1">
+            <button
+              onClick={() => {
+                setIsLogin(true);
+                setError('');
+              }}
+              className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
+                isLogin
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-foreground/70 hover:text-foreground'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => {
+                setIsLogin(false);
+                setError('');
+              }}
+              className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
+                !isLogin
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-foreground/70 hover:text-foreground'
+              }`}
+            >
+              Sign Up
+            </button>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name Field (Signup only) */}
+          <div className="space-y-4">
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-foreground mb-1">
+                {isLogin ? 'Welcome Back' : 'Get Started'}
+              </h3>
+              <p className="text-sm text-foreground/60">
+                {isLogin
+                  ? 'Sign in to access your fitness journey'
+                  : 'Create account to join our community'}
+              </p>
+            </div>
+
+            {/* Name Field - Sign Up Only */}
             {!isLogin && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                 <label className="text-sm font-medium text-foreground block mb-2">Full Name</label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 w-5 h-5 text-accent/60" />
-                  <Input
+                  <input
                     type="text"
                     placeholder="John Doe"
                     value={name}
@@ -152,7 +171,7 @@ export default function AuthPage() {
                       setName(e.target.value);
                       setError('');
                     }}
-                    className="pl-10 bg-foreground/5 border-foreground/10 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:ring-accent/20 transition-all"
+                    className="w-full pl-10 pr-4 py-2 rounded-lg bg-foreground/5 border border-foreground/10 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none transition-all"
                   />
                 </div>
               </motion.div>
@@ -163,7 +182,7 @@ export default function AuthPage() {
               <label className="text-sm font-medium text-foreground block mb-2">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 w-5 h-5 text-accent/60" />
-                <Input
+                <input
                   type="email"
                   placeholder="you@example.com"
                   value={email}
@@ -171,7 +190,7 @@ export default function AuthPage() {
                     setEmail(e.target.value);
                     setError('');
                   }}
-                  className="pl-10 bg-foreground/5 border-foreground/10 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:ring-accent/20 transition-all"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-foreground/5 border border-foreground/10 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none transition-all"
                 />
               </div>
             </motion.div>
@@ -181,7 +200,7 @@ export default function AuthPage() {
               <label className="text-sm font-medium text-foreground block mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-5 h-5 text-accent/60" />
-                <Input
+                <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={password}
@@ -189,7 +208,7 @@ export default function AuthPage() {
                     setPassword(e.target.value);
                     setError('');
                   }}
-                  className="pl-10 pr-10 bg-foreground/5 border-foreground/10 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:ring-accent/20 transition-all"
+                  className="w-full pl-10 pr-10 py-2 rounded-lg bg-foreground/5 border border-foreground/10 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none transition-all"
                 />
                 <button
                   type="button"
@@ -212,106 +231,25 @@ export default function AuthPage() {
               </motion.div>
             )}
 
-            {/* Remember & Forgot (Login only) */}
-            {isLogin && (
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 rounded border-accent/30 bg-foreground/5" />
-                  <span className="text-foreground/70">Remember me</span>
-                </label>
-                <a href="#" className="text-accent hover:underline font-medium">
-                  Forgot password?
-                </a>
-              </div>
-            )}
-
             {/* Submit Button */}
-            <button
-              type="submit"
+            <motion.button
+              onClick={isLogin ? handleLogin : handleSignUp}
               disabled={loading}
-              onClick={(e) => {
-                console.log('[v0] Button onClick fired');
-                handleSubmit(e);
-              }}
-              className="w-full h-11 px-4 rounded-lg bg-gradient-to-r from-accent to-accent/80 text-accent-foreground font-medium hover:shadow-lg hover:shadow-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full h-11 rounded-lg bg-gradient-to-r from-accent to-accent/80 text-accent-foreground font-medium hover:shadow-lg hover:shadow-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
             >
               {loading ? (
-                <div className="flex items-center gap-2 justify-center">
+                <>
                   <div className="w-4 h-4 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full animate-spin" />
-                  {isLogin ? 'Signing In...' : 'Creating Account...'}
-                </div>
+                  {isLogin ? 'Signing In...' : 'Creating...'}
+                </>
               ) : isLogin ? (
                 'Sign In'
               ) : (
                 'Create Account'
               )}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-foreground/10"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-card text-foreground/60">Continue with</span>
-            </div>
-          </div>
-
-          {/* Social Auth */}
-          <div className="grid grid-cols-3 gap-3">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleSocialAuth('Google')}
-              disabled={loading}
-              type="button"
-              className="h-12 rounded-lg border border-accent/20 bg-foreground/5 hover:bg-foreground/10 transition-colors flex items-center justify-center group disabled:opacity-50"
-            >
-              <span className="text-lg">🔵</span>
             </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleSocialAuth('GitHub')}
-              disabled={loading}
-              type="button"
-              className="h-12 rounded-lg border border-accent/20 bg-foreground/5 hover:bg-foreground/10 transition-colors flex items-center justify-center group disabled:opacity-50"
-            >
-              <span className="text-lg">⚫</span>
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleSocialAuth('Apple')}
-              disabled={loading}
-              type="button"
-              className="h-12 rounded-lg border border-accent/20 bg-foreground/5 hover:bg-foreground/10 transition-colors flex items-center justify-center group disabled:opacity-50"
-            >
-              <span className="text-lg">⚪</span>
-            </motion.button>
-          </div>
-
-          {/* Toggle Auth Mode */}
-          <div className="text-center text-sm">
-            <span className="text-foreground/60">
-              {isLogin ? 'Don&apos;t have an account? ' : 'Already have an account? '}
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setEmail('');
-                setPassword('');
-                setName('');
-                setError('');
-              }}
-              className="text-accent font-medium hover:underline"
-            >
-              {isLogin ? 'Sign up' : 'Sign in'}
-            </button>
           </div>
         </motion.div>
 
@@ -325,10 +263,6 @@ export default function AuthPage() {
           By continuing, you agree to our{' '}
           <a href="#" className="text-accent hover:underline font-medium">
             Terms of Service
-          </a>{' '}
-          and{' '}
-          <a href="#" className="text-accent hover:underline font-medium">
-            Privacy Policy
           </a>
         </motion.p>
       </motion.div>

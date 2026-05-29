@@ -7,6 +7,8 @@ import { ScrollReveal } from '@/components/scroll-reveal';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCube, faRobot, faDumbbell, faTrophy, faChartLine, faUsers } from '@fortawesome/free-solid-svg-icons';
 
 export default function Home() {
   const containerVariants = {
@@ -132,17 +134,17 @@ export default function Home() {
             { 
               title: '3D Visualization', 
               description: 'Watch detailed 3D models of every exercise from multiple angles',
-              icon: '🎯'
+              icon: faCube
             },
             { 
               title: 'AI Coaching', 
               description: 'Get personalized workout plans and real-time form correction',
-              icon: '🤖'
+              icon: faRobot
             },
             { 
               title: 'Premium Gear', 
               description: 'Access our curated collection of top-tier fitness equipment',
-              icon: '💪'
+              icon: faDumbbell
             },
           ].map((feature, index) => (
             <ScrollReveal key={index} direction={index % 2 === 0 ? 'left' : 'right'} delay={index * 0.1}>
@@ -151,7 +153,13 @@ export default function Home() {
                 whileHover={{ scale: 1.05, translateY: -8 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               >
-                <div className="text-4xl mb-4">{feature.icon}</div>
+                <motion.div 
+                  className="text-4xl mb-4 text-accent"
+                  whileHover={{ rotate: 360, scale: 1.2 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <FontAwesomeIcon icon={feature.icon} />
+                </motion.div>
                 <h3 className="text-xl font-bold text-foreground mb-2">{feature.title}</h3>
                 <p className="text-foreground/60">{feature.description}</p>
               </motion.div>
