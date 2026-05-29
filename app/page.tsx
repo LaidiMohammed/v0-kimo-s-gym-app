@@ -9,8 +9,24 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube, faRobot, faDumbbell, faTrophy, faChartLine, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
+  const [showCinematic, setShowCinematic] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('justLoggedIn') === 'true') {
+        setShowCinematic(true);
+        // Clean up URL
+        window.history.replaceState({}, '', '/');
+        // Hide transition after animation
+        setTimeout(() => setShowCinematic(false), 800);
+      }
+    }
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -32,7 +48,55 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background overflow-x-hidden relative">
+      {/* Cinematic login transition */}
+      {showCinematic && (
+        <motion.div
+          className="fixed inset-0 z-50 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {/* Top and bottom bars sliding in */}
+          <motion.div
+            className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-accent via-accent/50 to-transparent"
+            initial={{ y: '-100%' }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.5, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-accent via-accent/50 to-transparent"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.5, ease: 'easeInOut' }}
+          />
+
+          {/* Center loading text */}
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+          >
+            <motion.div className="text-center">
+              <motion.div
+                className="w-16 h-16 mx-auto mb-4 rounded-full border-3 border-transparent border-t-accent-foreground border-r-accent-foreground"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              />
+              <motion.p
+                className="text-accent-foreground font-semibold text-lg tracking-widest"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.4 }}
+              >
+                ENTERING YOUR WORLD
+              </motion.p>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      )}
+      
       <Navbar />
       
       {/* Hero Section */}
